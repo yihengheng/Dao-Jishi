@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>北京时间倒计时</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #countdown { margin-top: 20px; font-size: 18px; color: #333; }
+  </style>
+</head>
+<body>
+  <h2>北京时间倒计时计算器</h2>
+
+  <p>当前北京时间：<span id="bjTime"></span></p>
+
+  <label for="targetTime">请输入目标时间（支持 2025-05-11 20:00:00 或 5.17.17）：</label><br>
+  <input type="text" id="targetTime" placeholder="例如 5.17.17" size="30">
+
+  <div id="countdown"></div>
+
+  <script>
+    function updateBeijingTime() {
+      const now = new Date();
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      const beijingTime = new Date(utc + 8 * 3600000);
+      document.getElementById("bjTime").textContent = beijingTime.toLocaleString();
+    }
+
+    function parseInput(input) {
+      input = input.trim();
+      const shortFormat = /^(\d{1,2})\.(\d{1,2})\.(\d{1,2})$/;
+      const fullFormat = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+
+      if (shortFormat.test(input)) {
+        const [, month, day, hour] = input.match(shortFormat);
+        const year = new Date().getFullYear();
+        return new Date(`${year}/${month}/${day} ${hour}:00:00`);
+      } else if (fullFormat.test(input)) {
+        return new Date(input.replace(/-/g, "/"));
+      } else {
+        return NaN;
+      }
+    }
+
+    function calculateCountdown() {
+      const input = document.getElementById("targetTime").value;
+      const targetDate = parseInput(input);
+
+      if (isNaN(targetDate)) {
+        document.getElementById("countdown").textContent = "输入格式错误。请使用 5.17.17 或 2025-05-11 20:00:00 格式。";
+        return;
+      }
+
+      const now = new Date();
+      const utcNow = now.getTime() + now.getTimezoneOffset() * 60000;
+      const bjNow = new Date(utcNow + 8 * 3600000);
+
+      const diffMs = targetDate - bjNow;
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      document.getElementById("countdown").textContent =
+        diffHours >= 0
+          ? `倒计时：${diffHours.toFixed(2)} 小时`
+          : `已过去：${Math.abs(diffHours).toFixed(2)} 小时`;
+    }
+
+    document.getElementById("targetTime").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        calculateCountdown();
+      }
+    });
+
+    setInterval(updateBeijingTime, 1000);
+    updateBeijingTime();
+
+    // 注册 Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('SW 注册成功', reg))
+          .catch(err => console.error('SW 注册失败', err));
+      });
+    }
+  </script>
+</body>
+</html>
