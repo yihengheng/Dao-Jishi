@@ -8,12 +8,12 @@
   "description": "输入目标时间，实时显示北京时间倒计时。",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
