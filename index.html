@@ -15,7 +15,7 @@
     }
 
     input[type="text"] {
-      font-size: 16px; /* 设置为 16px，防止 iOS 放大 */
+      font-size: 16px; /* 防止 iOS 放大 */
       padding: 8px;
       width: 100%;
       box-sizing: border-box;
@@ -30,7 +30,6 @@
 </head>
 <body>
   <h2>北京时间倒计时计算器</h2>
-
   <p>当前北京时间：<span id="bjTime"></span></p>
 
   <label for="targetTime">请输入目标时间（支持 2025-05-11 20:00:00 或 5.17.17）：</label><br>
@@ -76,12 +75,16 @@
       const bjNow = new Date(utcNow + 8 * 3600000);
 
       const diffMs = targetDate - bjNow;
-      const diffHours = diffMs / (1000 * 60 * 60);
+      const diffMinutes = Math.floor(diffMs / 60000);
+      const absMinutes = Math.abs(diffMinutes);
+      const hours = Math.floor(absMinutes / 60);
+      const minutes = absMinutes % 60;
 
-      document.getElementById("countdown").textContent =
-        diffHours >= 0
-          ? `倒计时：${diffHours.toFixed(2)} 小时`
-          : `已过去：${Math.abs(diffHours).toFixed(2)} 小时`;
+      const text = diffMinutes >= 0
+        ? `倒计时：${hours} 小时 ${minutes} 分钟`
+        : `已过去：${hours} 小时 ${minutes} 分钟`;
+
+      document.getElementById("countdown").textContent = text;
     }
 
     document.getElementById("targetTime").addEventListener("keydown", function(event) {
