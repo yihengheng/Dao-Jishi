@@ -3,13 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>北京时间倒计时</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #countdown { margin-top: 20px; font-size: 18px; color: #333; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+
+    input[type="text"] {
+      font-size: 16px; /* 设置为 16px，防止 iOS 放大 */
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #countdown {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -18,7 +34,7 @@
   <p>当前北京时间：<span id="bjTime"></span></p>
 
   <label for="targetTime">请输入目标时间（支持 2025-05-11 20:00:00 或 5.17.17）：</label><br>
-  <input type="text" id="targetTime" placeholder="例如 5.17.17" size="30">
+  <input type="text" id="targetTime" placeholder="例如 5.17.17">
 
   <div id="countdown"></div>
 
@@ -77,7 +93,6 @@
     setInterval(updateBeijingTime, 1000);
     updateBeijingTime();
 
-    // 注册 Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js')
