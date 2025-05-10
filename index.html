@@ -66,12 +66,23 @@
       input = input.trim();
 
       // 目标格式：51017
-      const timeFormat = /^(\d{1})(\d{1,2})(\d{1,2})$/;  // 月 日 时 格式
+      const timeFormat = /^(\d{1,2})(\d{1,2})(\d{1,2})$/;  // 月 日 时 格式
 
       if (timeFormat.test(input)) {
         const [, month, day, hour] = input.match(timeFormat);
+
+        // 确保月份和日期的有效性
         const year = new Date().getFullYear();
-        return new Date(`${year}/${month}/${day} ${hour}:00:00`);
+        const validMonth = parseInt(month, 10);
+        const validDay = parseInt(day, 10);
+        const validHour = parseInt(hour, 10);
+
+        // 限制月份范围 1-12，日期 1-31，小时 0-23
+        if (validMonth < 1 || validMonth > 12 || validDay < 1 || validDay > 31 || validHour < 0 || validHour > 23) {
+          return NaN;
+        }
+
+        return new Date(`${year}/${validMonth}/${validDay} ${validHour}:00:00`);
       } else {
         return NaN;
       }
