@@ -2,124 +2,119 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>北京时间倒计时</title>
+  <title>租期倒计时</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#ffffff">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icons/icon-192.png">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      margin: 0;
-    }
-
-    input[type="text"] {
-      font-size: 16px;
-      padding: 8px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    #countdown {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #333;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+    .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    input[type="text"] { font-size: 18px; padding: 12px; width: 100%; box-sizing: border-box; border: 2px solid #ddd; border-radius: 8px; outline: none; }
+    #countdown-box { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; text-align: center; }
+    #countdown { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+    #target-display { font-size: 14px; color: #888; margin-top: 5px; }
+    button { padding: 12px 20px; font-size: 16px; cursor: pointer; margin-top: 15px; background-color: #4CAF50; color: white; border: none; border-radius: 8px; width: 100%; font-weight: bold; }
+    .bj-box { font-weight: bold; color: #333; margin-bottom: 10px; }
   </style>
 </head>
 <body>
-  <h2>北京时间倒计时计算器</h2>
-  <p>当前北京时间：<span id="bjTime"></span></p>
 
-  <label for="targetTime">5月10号17点 输入：51017 </label><br>
-  <input type="text" id="targetTime" placeholder="例如 51017 或 101017">
-  <button id="confirmButton">确认</button>
+<div class="container">
+  <h2>租期倒计时计算器</h2>
+  <div class="bj-box">当前北京：<span id="bjTime"></span></div>
 
-  <div id="countdown"></div>
+  <input type="text" id="targetTime" inputmode="numeric" placeholder="例如 101919 或 26101919">
+  
+  <button id="confirmButton">计算倒计时</button>
 
-  <script>
-    function updateBeijingTime() {
-      const now = new Date();
-      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-      const beijingTime = new Date(utc + 8 * 3600000);
-      document.getElementById("bjTime").textContent = beijingTime.toLocaleString();
+  <div id="countdown-box">
+    <div id="countdown">等待输入...</div>
+    <div id="target-display"></div>
+  </div>
+</div>
+
+<script>
+  function updateBeijingTime() {
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const bjNow = new Date(utc + 8 * 3600000);
+    document.getElementById("bjTime").textContent = bjNow.toLocaleString();
+  }
+
+  function parseInput(input) {
+    input = input.trim();
+    const now = new Date();
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const bjNow = new Date(utc + 8 * 3600000);
+    let year = bjNow.getFullYear();
+    let month, day, hour;
+
+    // 逻辑修复：如果输入以 "26" 开头且长度为 6 或 8 位
+    if (input.startsWith("26") && (input.length === 6 || input.length === 8)) {
+      year = 2026;
+      month = parseInt(input.substring(2, 4), 10);
+      day = parseInt(input.substring(4, 6), 10);
+      hour = input.length === 8 ? parseInt(input.substring(6, 8), 10) : 0;
+    } 
+    // 原有 5-6 位快捷解析逻辑
+    else if (input.length === 5) {
+      month = parseInt(input[0], 10);
+      day = parseInt(input.slice(1, 3), 10);
+      hour = parseInt(input.slice(3, 5), 10);
+    } else if (input.length === 6) {
+      month = parseInt(input.slice(0, 2), 10);
+      day = parseInt(input.slice(2, 4), 10);
+      hour = parseInt(input.slice(4, 6), 10);
+    } else {
+      return NaN;
     }
 
-    function parseInput(input) {
-      input = input.trim();
+    let targetDate = new Date(year, month - 1, day, hour, 0, 0);
 
-      const year = new Date().getFullYear();
-
-      if (/^\d{5}$/.test(input)) {
-        // 月份为 1 位数
-        const month = parseInt(input[0], 10);
-        const day = parseInt(input.slice(1, 3), 10);
-        const hour = parseInt(input.slice(3, 5), 10);
-        return new Date(`${year}/${month}/${day} ${hour}:00:00`);
-      } else if (/^\d{6}$/.test(input)) {
-        // 月份为 2 位数
-        const month = parseInt(input.slice(0, 2), 10);
-        const day = parseInt(input.slice(2, 4), 10);
-        const hour = parseInt(input.slice(4, 6), 10);
-        return new Date(`${year}/${month}/${day} ${hour}:00:00`);
-      } else {
-        return NaN;
-      }
+    // 自动判定跨年逻辑
+    if (input.length <= 6 && !input.startsWith("26") && (targetDate - bjNow < -43200000)) { 
+      targetDate.setFullYear(year + 1);
     }
 
-    function calculateCountdown() {
-      const input = document.getElementById("targetTime").value;
-      const targetDate = parseInput(input);
+    return targetDate;
+  }
 
-      if (isNaN(targetDate)) {
-        document.getElementById("countdown").textContent = "输入格式错误，请使用如 51017 或 101017 格式";
-        return;
-      }
+  function calculateCountdown() {
+    const input = document.getElementById("targetTime").value;
+    const targetDate = parseInput(input);
 
-      const now = new Date();
-      const utcNow = now.getTime() + now.getTimezoneOffset() * 60000;
-      const bjNow = new Date(utcNow + 8 * 3600000);
-
-      const diffMs = targetDate - bjNow;
-      const diffMinutes = Math.floor(diffMs / 60000);
-      const absMinutes = Math.abs(diffMinutes);
-      const hours = Math.floor(absMinutes / 60);
-      const minutes = absMinutes % 60;
-
-      const text = diffMinutes >= 0
-        ? `倒计时：${hours} 小时 ${minutes} 分钟`
-        : `已过去：${hours} 小时 ${minutes} 分钟`;
-
-      document.getElementById("countdown").textContent = text;
+    if (isNaN(targetDate) || targetDate.toString() === "Invalid Date") {
+      document.getElementById("countdown").textContent = "格式错误";
+      document.getElementById("target-display").textContent = "";
+      return;
     }
 
-    document.getElementById("confirmButton").addEventListener("click", calculateCountdown);
-    setInterval(updateBeijingTime, 1000);
-    updateBeijingTime();
+    document.getElementById("target-display").textContent = "目标：" + targetDate.toLocaleString();
 
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('SW 注册成功', reg))
-          .catch(err => console.error('SW 注册失败', err));
-      });
+    const now = new Date();
+    const utcNow = now.getTime() + now.getTimezoneOffset() * 60000;
+    const bjNow = new Date(utcNow + 8 * 3600000);
+
+    const diffMs = targetDate - bjNow;
+    const absMinutesTotal = Math.floor(Math.abs(diffMs) / 60000);
+    
+    // 直接换算成总小时
+    const totalHours = Math.floor(absMinutesTotal / 60);
+    const minutes = absMinutesTotal % 60;
+
+    let resultText = totalHours + " 小时 " + minutes + " 分钟";
+
+    if (diffMs >= 0) {
+      document.getElementById("countdown").textContent = "剩余：" + resultText;
+      document.getElementById("countdown").style.color = "#4CAF50";
+    } else {
+      document.getElementById("countdown").textContent = "已过去：" + resultText;
+      document.getElementById("countdown").style.color = "#FF5722";
     }
-  </script>
+  }
+
+  document.getElementById("confirmButton").addEventListener("click", calculateCountdown);
+  setInterval(updateBeijingTime, 1000);
+  updateBeijingTime();
+</script>
+
 </body>
 </html>
